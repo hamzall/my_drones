@@ -28,19 +28,6 @@ class ParsedMapData:
 
 
 
-# nb_drones: 2
-
-# start_hub: start 0 0 [color=green]
-# hub: waypoint1 1 0 [color=blue]
-# hub: waypoint2 2 0 [color=blue]
-# end_hub: goal 3 0 [color=red]
-# connection: start-waypoint1
-# connection: waypoint1-waypoint2
-# connection: waypoint2-goal
-
-
-
-
 class ParsingClassData:
     
     def ignore_comments(self, first_line: str) -> str:
@@ -53,25 +40,25 @@ class ParsingClassData:
     def get_drone_numbers(self, line: str) -> int:
         match_res = DRONES_NUM_SHOULD_BE.match(line)
         if (match_res is None):
-            raise ParsingError("Error, Bad Pattern in the first")
+            raise ParsingError("Error, Bad Pattern in the first line")
         number_of_drones = int(match_res.group(1))
         if (number_of_drones <= 0):
             raise ParsingError("Error, Please Enter a Positive Drone Numbers")
         return number_of_drones
 
 
-#      color=yellow  max_drones=2  juyj=56  
     def get_metadata_keyvalue(self, text: str | None, index_of_line: int) -> Dict[str, str]:
         if (text is None):
             return {}
         
         stripped_text = text.strip()
-        if (stripped_text is None):
+        # different between not koko / koko is None
+        if (not stripped_text):
             return {}
         
         result: Dict[str, str] = {}
         
-        for ke_va in stripped_text.split(" "):
+        for ke_va in stripped_text.split(): #different between split() / split("")
             if "=" not in ke_va:
                 raise ParsingError("Error, invalid metadata in the line %d" % index_of_line)
             
@@ -104,62 +91,19 @@ class ParsingClassData:
             raise ParsingError("Error, invalid connection syntax in line %d" % line_index)
         
         zone1, zone2, metadata = match_res.groups()
-        if (metadata is not None):
-            metadata_dict = self.get_metadata_keyvalue(metadata, line_index)
+        #so can work with empty dict
+        metadata_dict = self.get_metadata_keyvalue(metadata, line_index)
 
         capacity_of_max_link = self.get_parse_of_int(
             metadata_dict.get("max_link_capacity", "1") , line_index , "max_link_capacity"
         )
         
         is_there_other_key = set(metadata_dict).difference({"max_link_capacity"})
-        if (is_there_other_key == True):
+        if (is_there_other_key):
             raise ParsingError("Error, Should be only one key in line %d" % line_index)
         
         return Connection(zone1=zone1, zone2=zone2, max_link_capa=capacity_of_max_link)
     
-    
-    
-    
-    
-
-
-# def _parse_zone(self, line: str, line_index: int) -> Zone:
-#         """Parse one zone definition line."""
-#         match = _ZONE_RE.match(line)
-#         if match is None:
-#             raise ParseError(f"Line {line_index}: invalid zone syntax")
-
-#         zone_kind, name, x_str, y_str, metadata_text = match.groups()
-#         x = int(x_str)
-#         y = int(y_str)
-#         metadata = self._parse_metadata(metadata_text, line_index)
-
-#         zone_type_text = metadata.get("zone", ZoneType.NORMAL.value)
-#         try:
-#             zone_type = ZoneType(zone_type_text)
-#         except ValueError as exc:
-#             raise ParseError(
-#                 f"Line {line_index}: invalid zone type {zone_type_text!r}"
-#             ) from exc
-
-#         color = metadata.get("color", "none")
-#         max_drones = self._parse_positive_int(
-#             metadata.get("max_drones", "1"),
-#             line_index,
-#             "max_drones",
-#         )
-
-#         unsupported = set(metadata).difference({"zone", "color", "max_drones"})
-#         if unsupported:
-#             field_name = sorted(unsupported)[0]
-#             raise ParseError(
-#                 f"Line {line_index}: unsupported zone metadata {field_name!r}"
-#             )
-#         return Zone(name=name, x=x, y=y, zone_type=zone_type, color=color, max_drones=max_drones, is_start=zone_kind == "start_hub",
-#             is_end=zone_kind == "end_hub",
-# 
-# )
-#hub: loop_d 1 1 [zone=restricted color=orange]
 
     def parsing_zone(self, line: str, index_of_line: int) -> Zone:
         match_res = ZONE_SHOULD_BE.match(line)
@@ -179,18 +123,59 @@ class ParsingClassData:
             raise ParsingError("Error, invalid zone type in line: %d" % index_of_line)
 
         color = metadata_dict.get("color", "none")
-        max_drones = self.get_parse_of_int(metadata_dict.get("max_drones"), index_of_line, "max_drones")
-
-
-
+        max_drones = self.get_parse_of_int(metadata_dict.get("max_drones", "1"), index_of_line, "max_drones")
+        
+        is_there_other_key = set(metadata_dict).difference({"zone", "color", "max_drones"})
+        if (is_there_other_key):
+            raise ParsingError("Error, more than expected keys in zone metadata, line: %d" % index_of_line)
+        
+        return Zone(
+            name=name, x=x, y=y, zone_type=zone_type, color=color,
+            drones_capa=max_drones, is_start=(zone_type_from3 == "start_hub"), is_end=(zone_type_from3 == "end_hub"))
 
 
     def parsing_file_data(self, data_from_file: str) -> ParsedMapData:
-        
         lines = data_from_file.splitlines()
         if (not lines):
             raise ParsingError("Error, in the first line should be 'total_drones: <pos_num>'")
         
+        first_line = self.ignore_comments(lines[0])
+        if (not first_line):
+            raise ParsingError("Error, in the first line should be 'total_drones: <pos_num>'")
+        
+        number_of_drones = self.get_drone_numbers(first_line)
+        
+        graph_obj = Graph()
+        
+        for index_of_line, data_in_line in enumerate(lines[1:], start=2):
+            good_line = self.ignore_comments(data_in_line).strip()
+            if not good_line or good_line == "":
+                continue
+            
+            if (good_line.startswith("connection:")):
+                connection_obj = self.parse_connection(good_line, index_of_line)
+                try:
+                    graph_obj.add_connection(connection_obj)
+                except Exception:
+                    raise ParsingError("Error, When Add a Connection line: %d" % index_of_line)
+                continue
+            
+            zone_obj = self.parsing_zone(good_line, index_of_line)
+            try:
+                graph_obj.add_zone(zone_obj)
+            except Exception:
+                raise ParsingError("Error, When Add a Zone, line %d" % index_of_line)
+        
+        if graph_obj.start_name is None:
+            raise ParsingError("Error, Map must al least include one start_hub as max and min")
+        
+        if graph_obj.end_name is None:
+            raise ParsingError("Error, Map must al least include one end_hub as max and min")
+        
+        return ParsedMapData(drones_num=number_of_drones, graph_obj=graph_obj)
+
 
 
 # pushiiii
+#if (stripped_text is None):
+#for ke_va in stripped_text.split(" "):
