@@ -1,3 +1,20 @@
-from classes_types import Zone, ZoneType, Connection, Graph, Drone, RestrictedMonitor
+from parsing import ParsingClassData
 
-from  re  import compile
+
+
+
+
+
+
+
+
+obj = ParsingClassData()
+
+
+
+try:
+    obj_of_result = obj.start_parsing("map")
+except Exception as o:
+    print(o)
+
+

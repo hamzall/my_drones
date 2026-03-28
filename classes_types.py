@@ -27,7 +27,7 @@ class Zone:
 
     def __init__(
         #"None" as string or real None
-        self, name: str, x: int, y: int, type_of_zone = ZoneType.NORMAL,
+        self, name: str, x: int, y: int, type_of_zone: ZoneType = ZoneType.NORMAL,
         color: str = "none", drones_capa: int = 1,
         is_start: bool = False, is_end: bool = False 
         ) -> None:

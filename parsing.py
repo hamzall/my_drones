@@ -118,7 +118,7 @@ class ParsingClassData:
         zone_type_str = metadata_dict.get("zone", ZoneType.NORMAL.value)
         
         try:
-            zone_type = ZoneType(zone_type_str)
+            zone_type_en = ZoneType(zone_type_str)
         except Exception:
             raise ParsingError("Error, invalid zone type in line: %d" % index_of_line)
 
@@ -130,22 +130,22 @@ class ParsingClassData:
             raise ParsingError("Error, more than expected keys in zone metadata, line: %d" % index_of_line)
         
         return Zone(
-            name=name, x=x, y=y, zone_type=zone_type, color=color,
+            name=name, x=x, y=y, type_of_zone=zone_type_en, color=color,
             drones_capa=max_drones, is_start=(zone_type_from3 == "start_hub"), is_end=(zone_type_from3 == "end_hub"))
 
 
     def parsing_file_data(self, data_from_file: str) -> ParsedMapData:
         lines = data_from_file.splitlines()
         if (not lines):
-            raise ParsingError("Error, in the first line should be 'total_drones: <pos_num>'")
+            raise ParsingError("Error, in the first line should be 'nb_drones: <pos_num>'")
         
         first_line = self.ignore_comments(lines[0])
         if (not first_line):
-            raise ParsingError("Error, in the first line should be 'total_drones: <pos_num>'")
+            raise ParsingError("Error, in the first line should be 'nb_drones: <pos_num>'")
         
         number_of_drones = self.get_drone_numbers(first_line)
         
-        graph_obj = Graph()
+        graph_obj = Graph({}, {}, {})
         
         for index_of_line, data_in_line in enumerate(lines[1:], start=2):
             good_line = self.ignore_comments(data_in_line).strip()
@@ -161,6 +161,7 @@ class ParsingClassData:
                 continue
             
             zone_obj = self.parsing_zone(good_line, index_of_line)
+            
             try:
                 graph_obj.add_zone(zone_obj)
             except Exception:
@@ -172,7 +173,7 @@ class ParsingClassData:
         if graph_obj.end_name is None:
             raise ParsingError("Error, Map must al least include one end_hub as max and min")
         
-        return ParsedMapData(drones_num=number_of_drones, graph_obj=graph_obj)
+        return ParsedMapData(drones_num=number_of_drones, the_graph=graph_obj)
 
 
     def start_parsing(self, file_name: str) -> ParsedMapData:
