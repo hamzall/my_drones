@@ -97,6 +97,9 @@ class Graph:
         if (" " in zone.name or "-" in zone.name):
             raise ValueError("Error: Invalid zone name")
 
+        if zone.x < 0 or zone.y < 0:
+            raise ValueError("Zone coordinates must be positive integers")
+    
         #self.zones.keys()
         if (zone.name in self.zones):
             raise ValueError("Error: Invalid zone name, Already Exists")

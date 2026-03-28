@@ -175,6 +175,12 @@ class ParsingClassData:
         return ParsedMapData(drones_num=number_of_drones, graph_obj=graph_obj)
 
 
+    def start_parsing(self, file_name: str) -> ParsedMapData:
+        with open(file_name, "r") as file:
+            file_data = file.read()
+            return self.parsing_file_data(file_data)
+
+
 
 # pushiiii
 #if (stripped_text is None):
