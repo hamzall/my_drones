@@ -18,7 +18,7 @@ class ZoneType(str, Enum):
         elif (self is ZoneType.RESTRICTED):
             return 2
         elif (self is ZoneType.BLOCKED):
-            raise ValueError("invalid movement cost, Blocked Zone")
+            raise ValueError("Error, invalid movement cost, Blocked Zone")
         else:
             return 0
 
@@ -28,7 +28,7 @@ class Zone:
     def __init__(
         #"None" as string or real None
         self, name: str, x: int, y: int, type_of_zone: ZoneType = ZoneType.NORMAL,
-        color: str = "none", drones_capa: int = 1,
+        color: str = "none", max_drones: int = 1,
         is_start: bool = False, is_end: bool = False 
         ) -> None:
         self.name = name
@@ -36,7 +36,7 @@ class Zone:
         self.y = y
         self.type_of_zone = type_of_zone
         self.color = color
-        self.drones_capa = drones_capa
+        self.max_drones = max_drones
         self.is_start = is_start
         self.is_end = is_end
 
@@ -45,7 +45,7 @@ class Zone:
         "None means unlimited drones"
         if (self.is_start or self.is_end):
             return None
-        return self.drones_capa
+        return self.max_drones
 
 
 
@@ -97,6 +97,7 @@ class Graph:
         if (" " in zone.name or "-" in zone.name):
             raise ValueError("Error: Invalid zone name")
 
+        #should be or not ?
         if zone.x < 0 or zone.y < 0:
             raise ValueError("Zone coordinates must be positive integers")
     
@@ -149,7 +150,7 @@ class Graph:
         return self.zones[self.end_name]
 
 
-    def get_a_connecton(self, z1: str, z2: str) -> Connection:
+    def get_a_connection(self, z1: str, z2: str) -> Connection:
         key = tuple(sorted((z1, z2)))
         return self.connections[key]
 

@@ -4,7 +4,7 @@ from except_error import ParsingError
 from typing import Dict
 from classes_types import Connection, Zone, ZoneType
 
-
+#max_drones
 # Capturing Groups
 # ^ should start with this
 # $ for take all text for match it starting with ^
@@ -30,15 +30,15 @@ class ParsedMapData:
 
 class ParsingClassData:
     
-    def ignore_comments(self, first_line: str) -> str:
-        res = first_line.find("#")
+    def ignore_comments(self, line: str) -> str:
+        res = line.find("#")
         if (res == -1):
-            return first_line
-        return first_line[:res]
+            return line
+        return line[:res]
 
 
-    def get_drone_numbers(self, line: str) -> int:
-        match_res = DRONES_NUM_SHOULD_BE.match(line)
+    def get_drone_numbers(self, first_line: str) -> int:
+        match_res = DRONES_NUM_SHOULD_BE.match(first_line)
         if (match_res is None):
             raise ParsingError("Error, Bad Pattern in the first line")
         number_of_drones = int(match_res.group(1))
@@ -75,6 +75,7 @@ class ParsingClassData:
 
 
     def get_parse_of_int(self, value: str, line_index: int, field_name: str) -> int:
+        # here negative mybe should pass
         try:
             result = int(value)
         except Exception:
@@ -91,7 +92,7 @@ class ParsingClassData:
             raise ParsingError("Error, invalid connection syntax in line %d" % line_index)
         
         zone1, zone2, metadata = match_res.groups()
-        #so can work with empty dict
+        
         metadata_dict = self.get_metadata_keyvalue(metadata, line_index)
 
         capacity_of_max_link = self.get_parse_of_int(
@@ -131,7 +132,7 @@ class ParsingClassData:
         
         return Zone(
             name=name, x=x, y=y, type_of_zone=zone_type_en, color=color,
-            drones_capa=max_drones, is_start=(zone_type_from3 == "start_hub"), is_end=(zone_type_from3 == "end_hub"))
+            max_drones=max_drones, is_start=(zone_type_from3 == "start_hub"), is_end=(zone_type_from3 == "end_hub"))
 
 
     def parsing_file_data(self, data_from_file: str) -> ParsedMapData:
