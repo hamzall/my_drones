@@ -26,7 +26,6 @@ class ZoneType(str, Enum):
 class Zone:
 
     def __init__(
-        #"None" as string or real None
         self, name: str, x: int, y: int, type_of_zone: ZoneType = ZoneType.NORMAL,
         color: str = "none", max_drones: int = 1,
         is_start: bool = False, is_end: bool = False 
@@ -97,9 +96,8 @@ class Graph:
         if (" " in zone.name or "-" in zone.name):
             raise ValueError("Error: Invalid zone name")
 
-        #should be or not ?
-        if zone.x < 0 or zone.y < 0:
-            raise ValueError("Zone coordinates must be positive integers")
+        if not isinstance(zone.x, int) or not isinstance(zone.y, int):
+            raise ValueError("Zone coordinates must be integers")
     
         #self.zones.keys()
         if (zone.name in self.zones):

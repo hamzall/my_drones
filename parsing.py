@@ -11,7 +11,7 @@ from classes_types import Connection, Zone, ZoneType
 # r for dont read data with \
 # like \n we dont want from it a new line exp
 ZONE_SHOULD_BE = compile(
-    r"^(start_hub|end_hub|hub):\s+([^\s\-]+)\s+(\d+)\s+(\d+)(?:\s+\[(.*?)\])?$"
+    r"^(start_hub|end_hub|hub):\s+([^\s\-]+)\s+(-?\d+)\s+(-?\d+)(?:\s+\[(.*?)\])?$"
 )
 CONNECTION_SHOULD_BE = compile(
     r"^connection:\s+([^\s\-]+)-([^\s\-]+)(?:\s+\[(.*?)\])?$"
@@ -52,13 +52,12 @@ class ParsingClassData:
             return {}
         
         stripped_text = text.strip()
-        # different between not koko / koko is None
         if (not stripped_text):
             return {}
         
         result: Dict[str, str] = {}
         
-        for ke_va in stripped_text.split(): #different between split() / split("")
+        for ke_va in stripped_text.split():
             if "=" not in ke_va:
                 raise ParsingError("Error, invalid metadata in the line %d" % index_of_line)
             
@@ -139,16 +138,28 @@ class ParsingClassData:
         lines = data_from_file.splitlines()
         if (not lines):
             raise ParsingError("Error, in the first line should be 'nb_drones: <pos_num>'")
-        
-        first_line = self.ignore_comments(lines[0])
-        if (not first_line):
-            raise ParsingError("Error, in the first line should be 'nb_drones: <pos_num>'")
-        
-        number_of_drones = self.get_drone_numbers(first_line)
-        
+        ###
+        nb_drones = None
+        start_index = 0
+        for i, raw_line in enumerate(lines):
+            clean_line = self.ignore_comments(raw_line).strip()
+            if not clean_line:
+                continue
+            try:
+                nb_drones = self.get_drone_numbers(clean_line)
+            except ParsingError:
+                raise ParsingError(f"Line {i+1}: expected 'nb_drones: <positive_integer>' as first non-comment line")
+            start_index = i + 1
+            break
+        if nb_drones is None:
+            raise ParsingError("Missing 'nb_drones: <positive_integer>'")
+        ###
         graph_obj = Graph({}, {}, {})
         
-        for index_of_line, data_in_line in enumerate(lines[1:], start=2):
+        
+        ##
+        for index_of_line, data_in_line in enumerate(lines[start_index:], start=start_index + 1):
+        ##
             good_line = self.ignore_comments(data_in_line).strip()
             if not good_line or good_line == "":
                 continue
@@ -162,7 +173,6 @@ class ParsingClassData:
                 continue
             
             zone_obj = self.parsing_zone(good_line, index_of_line)
-            
             try:
                 graph_obj.add_zone(zone_obj)
             except Exception:
@@ -174,7 +184,7 @@ class ParsingClassData:
         if graph_obj.end_name is None:
             raise ParsingError("Error, Map must al least include one end_hub as max and min")
         
-        return ParsedMapData(drones_num=number_of_drones, the_graph=graph_obj)
+        return ParsedMapData(drones_num=nb_drones, the_graph=graph_obj)
 
 
     def start_parsing(self, file_name: str) -> ParsedMapData:
@@ -185,5 +195,5 @@ class ParsingClassData:
 
 
 # pushiiii
-#if (stripped_text is None):
-#for ke_va in stripped_text.split(" "):
+# nb_drones: +2
+# (+2, -0)...

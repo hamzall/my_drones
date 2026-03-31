@@ -1,26 +1,27 @@
-from parsing import ParsingClassData
+
+import parsing
+
+
+
+
+obj = parsing.ParsingClassData()
+
+
+
+# r"^connection:\s+([^\s\-]+)-([^\s\-]+)(?:\s+\[(.*?)\])?$"
+
+
+
+try:
+    res = (obj.start_parsing("map"))
+    
+    print(res.drones_num)
+    
+except Exception as o:
+    print(o)
+    
 
 
 
 
 
-
-
-
-
-# obj = ParsingClassData()
-
-
-
-# try:
-#     obj_of_result = obj.parse_connection("connection: corridorA-tunnelB [max_link_capacity=-2]", 23)
-#     print(obj_of_result.max_link_capa)
-# except Exception as o:
-#     print(o)
-
-
-f = {"hamza", "koko"}
-
-res = f or set()
-
-print(res)
