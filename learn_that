@@ -1,0 +1,102 @@
+5) الخوارزميات Algorithms
+
+هذا أهم جزء.
+
+الكود قريب جدًا من خوارزمية Dijkstra للبحث عن أقصر طريق، لكن مع تعديل:
+
+يفضّل أقل تكلفة
+ثم يفضّل عدد أكبر من مناطق PRIORITY
+ثم يفضّل عدد خطوات أقل
+
+يعني ليس فقط “أقصر طريق”، بل “أفضل طريق حسب أكثر من معيار”.
+
+تعلّم:
+
+Graph traversal
+Shortest Path
+Dijkstra Algorithm
+Priority Queue
+كيف نقارن بين أكثر من معيار داخل tuple
+
+السطر هذا مهم جدًا:
+
+candidate = (cost + step_cost, neg_priority - priority_bonus, hops + 1)
+
+هنا البرنامج يقارن بين:
+
+التكلفة
+أولوية المناطق
+عدد الخطوات
+6) Graph Theory
+
+بما أن عندك:
+
+Graph
+zones
+neighbors
+
+فأنت تحتاج أساسيات الجراف:
+
+ما هو graph
+ما هو node
+ما هو edge
+ما معنى neighbors
+كيف نمثل map أو شبكة كمخطط graph
+7) Caching / Memoization
+
+هذا السطر:
+
+self.the_cache
+
+معناه: إذا حسبنا الطريق من قبل، لا نعيد الحساب مرة أخرى.
+
+تعلّم:
+
+ما هو cache
+لماذا يفيد في تحسين الأداء
+كيف نستعمل tuple كمفتاح في dictionary
+8) Enums
+
+في الكود يوجد:
+
+ZoneType.BLOCKED
+ZoneType.PRIORITY
+
+غالبًا ZoneType هو Enum.
+
+تعلّم:
+
+ما هو Enum
+متى نستخدمه بدل النصوص العادية
+كيف نخزن خصائص لكل نوع، مثل:
+هل المنطقة blocked
+كم تكلفة الحركة فيها
+كيف تقرأ هذا الكود عمليًا؟
+
+اقرأه بهذا الترتيب:
+
+TheRoad
+
+هذا كلاس بسيط يمثل الطريق:
+
+zones: المسار
+total_cost: التكلفة
+priority_steps: عدد المناطق ذات الأولوية
+
+ودالة:
+
+next_zone_name()
+
+ترجع المنطقة التالية في المسار.
+
+PathFinder
+
+هذا هو الجزء الأساسي.
+
+__init__
+
+يستقبل graph ويحفظه، ثم ينشئ cache.
+
+shortest_road
+
+تبحث عن أفضل طريق من current_zone إلى النهاية.
