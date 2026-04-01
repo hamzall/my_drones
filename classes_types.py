@@ -3,7 +3,6 @@ from typing import Tuple, Dict, Optional, Iterable
 
 
 
-
 class ZoneType(str, Enum):
     NORMAL = "normal"
     PRIORITY = "priority"
@@ -24,7 +23,6 @@ class ZoneType(str, Enum):
 
 
 class Zone:
-
     def __init__(
         self, name: str, x: int, y: int, type_of_zone: ZoneType = ZoneType.NORMAL,
         color: str = "none", max_drones: int = 1,
@@ -49,7 +47,6 @@ class Zone:
 
 
 class Connection:
-
     def __init__(self, zone1: str, zone2: str, max_link_capa: int = 1) -> None:
         self.zone1 = zone1
         self.zone2 = zone2
@@ -79,7 +76,6 @@ class Connection:
 
 
 class Graph:
-
     def __init__(
             self, zones: Dict[str, Zone], connections: Dict[Tuple[str, str], Connection],
             neighbors: Dict[str, Dict[str, Connection]], start_name: Optional[str] = None,
@@ -159,7 +155,6 @@ class Graph:
 
 
 class Drone:
-
     def __init__(self, drone_id: int, current_zone_name: str, arrivaled: bool = False) -> None:
         self.drone_id = drone_id
         self.current_zone_name = current_zone_name
@@ -169,9 +164,9 @@ class Drone:
         return ("D%d" % self.drone_id)
 
 
+
 # without this class will algo make the restricted zones like the normal zones
 class RestrictedMonitor:
-    
     def __init__(
             self, drone_id: int, frrom: str, to: str,
             name_of_connec: str, turns_until_arrival: int

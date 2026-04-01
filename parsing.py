@@ -196,4 +196,4 @@ class ParsingClassData:
 
 # pushiiii
 # nb_drones: +2
-# (+2, -0)...
+# (+2, -0).../
